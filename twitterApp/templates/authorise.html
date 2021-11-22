@@ -1,0 +1,24 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+{% extends "base.html" %}
+
+{% block title %}
+    Authorise
+{% endblock %}
+
+{% block content %}
+<div class="flex-container">
+    <div>
+        <h2>Please follow the instructions on the twitter authorisation page and insert your received code below</h2>
+    </div>
+    <div>
+        <form method="POST">
+            <div class="mb-3">
+                {{ form.autorisation_key.label() }}
+                {{ form.autorisation_key(class="form-control") }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+{% endblock %}
