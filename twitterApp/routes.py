@@ -8,17 +8,21 @@ SECRET_KEY = os.urandom(32)
 app.config["SECRET_KEY"] = SECRET_KEY
 
 class Auth():
-    def __init__(self, consumer_key = None, consumer_secret = None):
+    def __init__(self):
         self.auth = None
-        self.consumer_key = consumer_key
-        self.consumer_secret = consumer_secret
+        self.consumer_key = None
+        self.consumer_secret = None
+        self.access_token = None
+        self.access_token_secret = None
         self.callback_uri = "oob"
+        self.api = None
+
 
     def setConsumer_key(self, consumer_key):
         self.consumer_key = consumer_key
         return self.consumer_key
 
-    def setconsumer_secret(self, consumer_secret):
+    def setConsumer_secret(self, consumer_secret):
         self.consumer_secret = consumer_secret
         return self.consumer_secret
 
@@ -29,20 +33,35 @@ class Auth():
     def getAuth(self):
         return self.auth
 
+    def setAccess_token(self, access_token):
+        self.access_token = access_token
+        return self.access_token
+
+    def setaccess_token_secret(self, access_token_secret):
+        self.access_token_secret = access_token_secret
+        return self.access_token_secret
+
+    def setApi(self):
+        self.api = tweepy.API(self.auth)
+        return self.api
+
+    def getApi(self):
+        return self.api
+
 @app.route('/')
 def home():
-  return render_template("home.html")
+    if A1.getApi():
+        return redirect(url_for("dashboard"))
+    else:
+        return redirect(url_for("login"))
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if request.method == "POST":
         A1.setConsumer_key(request.form["consumer_key"])
-        A1.setconsumer_secret(request.form["consumer_secret"])
-        access_token = request.form["access_token"]
-        access_token_secret = request.form["access_token_secret"]
+        A1.setConsumer_secret(request.form["consumer_secret"])
         try:
-            A1.setAuth()
             A1.setAuth()
             auth = A1.getAuth()
             redirect_url = auth.get_authorization_url()
@@ -53,13 +72,10 @@ def login():
         return render_template("login.html", form=form, active=True)
     return render_template("login.html", form=form ,active=True)
 
-@app.route("/logout")
-def logout():
-    return render_template("logout.html")
-
 @app.route("/dashboard")
 def dashboard():
-    return render_template("dashboard.html")
+    public_tweets = A1.api.home_timeline()
+    return render_template("dashboard.html", public_tweets=public_tweets)
 
 @app.route("/authorise", methods=["GET", "POST"])
 def authorise():
@@ -69,9 +85,17 @@ def authorise():
         try:
             auth = A1.getAuth()
             access = auth.get_access_token(token)
+            A1.setAccess_token(access[0])
+            A1.setaccess_token_secret(access[1])
+            api = A1.setApi()
             return redirect(url_for("dashboard"))
         except:
             print('Error! Failed to get request authorisation.')
     return render_template("authorise.html", form=form, auth = request.args.get('email'))
+
+@app.route("/logout")
+def logout():
+    A1.api = None
+    return redirect(url_for("home"))
 
 A1 = Auth()
