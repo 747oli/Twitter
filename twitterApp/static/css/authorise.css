@@ -10,6 +10,10 @@ h2 {
     flex-direction: column;
 }
 
+.spacing {
+    margin-bottom: 2%;
+}
+
 @media only screen and (max-height: 1000px) {
   .flex-container {
       min-height: 500px;

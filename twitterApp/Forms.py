@@ -9,8 +9,8 @@ class LoginForm(FlaskForm):
     bearer_token = StringField(label="Bearer Token", validators=[DataRequired()])
     access_token = StringField(label="Access Token", validators=[DataRequired()])
     access_token_secret = StringField(label="Access Token Secret", validators=[DataRequired()])
-    submit = SubmitField(label="Login")
+    submit = SubmitField(label="Login", name="submit")
 
 class AuthoriseForm(FlaskForm):
-    autorisation_key = StringField(label="Autorisation Key", validators=[Length(min=7,max=7),DataRequired()])
+    autorisation_key = StringField(label="Autorisation Key", validators=[Length(min=7, max=7), DataRequired()])
     submit = SubmitField(label="Check Authorisation Key")
