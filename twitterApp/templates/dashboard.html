@@ -1,0 +1,11 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+{% extends "base.html" %}
+
+{% block title %}
+    dashboard
+{% endblock %}
+
+{% block content %}
+<iframe src="{{ redirect_url }}"></iframe>
+{% endblock %}

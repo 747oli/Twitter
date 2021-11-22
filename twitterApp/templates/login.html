@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+{% extends "base.html" %}
+
+{% block title %}
+    login
+{% endblock %}
+
+{% if error %}
+    <p>{{ error }}</p>
+{% endif %}
+
+{% block content %}
+
+<div class="flex-container">
+    <div>
+        <h2>Please log in with your Twitter credentials</h2>
+    </div>
+    <div>
+        <form method="POST">
+            <div class="mb-3">
+                {{ form.consumer_key.label() }}
+                {{ form.consumer_key(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.consumer_secret.label() }}
+                {{ form.consumer_secret(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.bearer_token.label() }}
+                {{ form.bearer_token(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.access_token.label() }}
+                {{ form.access_token(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.access_token_secret.label() }}
+                {{ form.access_token_secret(class="form-control") }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+</div>
+
+{% endblock %}
