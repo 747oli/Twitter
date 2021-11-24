@@ -3,6 +3,7 @@ from twitterApp import app
 from flask import render_template, redirect, url_for, request, get_flashed_messages
 from twitterApp.Forms import LoginForm, AuthoriseForm
 import os
+import re
 import webbrowser
 SECRET_KEY = os.urandom(32)
 app.config["SECRET_KEY"] = SECRET_KEY
@@ -74,8 +75,20 @@ def login():
 
 @app.route("/dashboard")
 def dashboard():
-    public_tweets = A1.api.home_timeline()
-    return render_template("dashboard.html", public_tweets=public_tweets)
+    list_id = 1463104625704378368
+    word = "(Government)"
+    members = A1.api.list_timeline(list_id=list_id, include_rts=False)
+    statusses = []
+
+    for member in members:
+        status = A1.api.get_status(member.id, tweet_mode="extended")
+        match = re.search(word, status.full_text)
+        if match:
+            statusses.append(status)
+        else:
+            pass
+
+    return render_template("dashboard.html", statusses = statusses)
 
 @app.route("/authorise", methods=["GET", "POST"])
 def authorise():
