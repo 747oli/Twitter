@@ -1,7 +1,7 @@
 import tweepy
 from twitterApp import app
 from flask import render_template, redirect, url_for, request, get_flashed_messages
-from twitterApp.Forms import LoginForm, AuthoriseForm
+from twitterApp.Forms import LoginForm, AuthoriseForm, SearchForm
 import os
 import re
 import webbrowser
@@ -73,22 +73,28 @@ def login():
         return render_template("login.html", form=form, active=True)
     return render_template("login.html", form=form ,active=True)
 
-@app.route("/dashboard")
+@app.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
-    list_id = 1463104625704378368
-    word = "(Government)"
-    members = A1.api.list_timeline(list_id=list_id, include_rts=False)
+    form = SearchForm()
     statusses = []
+    if request.method == "POST":
+        word = f"({request.form['searchField']})"
+        list_id = 1463104625704378368
+        members = A1.api.list_timeline(list_id=list_id, include_rts=False)
 
-    for member in members:
-        status = A1.api.get_status(member.id, tweet_mode="extended")
-        match = re.search(word, status.full_text)
-        if match:
-            statusses.append(status)
-        else:
-            pass
+        for member in members:
+            status = A1.api.get_status(member.id, tweet_mode="extended")
+            print(status.full_text)
+            match = re.search(word, status.full_text)
+            if match:
+                statusses.append(status)
+                print("Found")
+            else:
+                pass
 
-    return render_template("dashboard.html", statusses = statusses)
+        return render_template("dashboard.html", statusses=statusses, form=form)
+
+    return render_template("dashboard.html", statusses = statusses, form=form)
 
 @app.route("/authorise", methods=["GET", "POST"])
 def authorise():
@@ -104,7 +110,7 @@ def authorise():
             return redirect(url_for("dashboard"))
         except:
             print('Error! Failed to get request authorisation.')
-    return render_template("authorise.html", form=form, auth = request.args.get('email'))
+    return render_template("authorise.html", form=form)
 
 @app.route("/logout")
 def logout():

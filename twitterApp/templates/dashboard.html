@@ -7,13 +7,30 @@
 {% endblock %}
 
 {% block content %}
-<h1>hello</h1>
-<div class="container-fluid">
-    {% for status in statusses %}
-    <div>{{ status.id }}</div>
-    <div>{{ status.user.name }}</div>
-    <div><img src="{{ status.user.profile_image_url}}"></div>
-    <div>{{ status.full_text }}</div>
-    {% endfor %}
+
+<form method="POST">
+    <div class="container">
+        <div class="mb-3 item input">
+            {{ form.searchField(class="form-control") }}
+        </div>
+        <div>
+            <div class="mb-3 item">
+                {{ form.search(class="btn btn-primary") }}
+            </div>
+        </div>
+    </div>
+</form>
+
+
+
+<div class="container2">
+                {% for status in statusses %}
+                    <div class="item2">
+                        <div>{{ status.user.name }}</div>
+                        <div><img src="{{ status.user.profile_image_url}}"></div>
+                        <div>{{ status.full_text }}</div>
+                    </div>
+                {% endfor %}
 </div>
+
 {% endblock %}

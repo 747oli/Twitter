@@ -14,3 +14,7 @@ class LoginForm(FlaskForm):
 class AuthoriseForm(FlaskForm):
     autorisation_key = StringField(label="Autorisation Key", validators=[Length(min=7, max=7), DataRequired()])
     submit = SubmitField(label="Check Authorisation Key")
+
+class SearchForm(FlaskForm):
+    searchField = StringField(label="Search For word", render_kw={"placeholder": "Search for a word"})
+    search= SubmitField(label="Search")
