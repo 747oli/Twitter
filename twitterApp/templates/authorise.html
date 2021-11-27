@@ -7,6 +7,13 @@
 {% endblock %}
 
 {% block content %}
+
+{% if error %}
+    <div class="alert alert-danger" role="alert">
+        Error! Failed to get request token.
+    </div>
+{% endif %}
+
 <div class="flex-container">
     <div>
         <h2>1. Follow the instructions on the twitter authorisation page</h2>

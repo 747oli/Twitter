@@ -1,0 +1,18 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sentiment.css') }}">
+
+{% extends "base2.html" %}
+
+{% block title %}
+    Sentiment
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <figure class="figure">
+        <img src="{{url_for('static', filename='src/fig.png')}}" class="figure-img img-fluid rounded" alt="Sentiment Figure">
+    </figure>
+</div>
+
+
+{% endblock %}

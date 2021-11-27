@@ -16,5 +16,5 @@ class AuthoriseForm(FlaskForm):
     submit = SubmitField(label="Check Authorisation Key")
 
 class SearchForm(FlaskForm):
+    sentimentAllowed = False
     searchField = StringField(label="Search For word", render_kw={"placeholder": "Search for a word"})
-    search= SubmitField(label="Search")

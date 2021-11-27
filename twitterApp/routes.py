@@ -1,53 +1,18 @@
 import tweepy
 from twitterApp import app
-from flask import render_template, redirect, url_for, request, get_flashed_messages
-from twitterApp.Forms import LoginForm, AuthoriseForm, SearchForm
+from flask import render_template, redirect, url_for, request
+
+from twitterApp.Forms.Forms import LoginForm, AuthoriseForm, SearchForm
+from twitterApp.Authorisation.Authorisation import A1
+from twitterApp.Tweets.Tweets import T1
+
 import os
-import re
-import webbrowser
 SECRET_KEY = os.urandom(32)
 app.config["SECRET_KEY"] = SECRET_KEY
 
-class Auth():
-    def __init__(self):
-        self.auth = None
-        self.consumer_key = None
-        self.consumer_secret = None
-        self.access_token = None
-        self.access_token_secret = None
-        self.callback_uri = "oob"
-        self.api = None
-
-
-    def setConsumer_key(self, consumer_key):
-        self.consumer_key = consumer_key
-        return self.consumer_key
-
-    def setConsumer_secret(self, consumer_secret):
-        self.consumer_secret = consumer_secret
-        return self.consumer_secret
-
-    def setAuth(self):
-        self.auth = tweepy.OAuthHandler(self.consumer_key, self.consumer_secret, self.callback_uri)
-        return self.auth
-
-    def getAuth(self):
-        return self.auth
-
-    def setAccess_token(self, access_token):
-        self.access_token = access_token
-        return self.access_token
-
-    def setaccess_token_secret(self, access_token_secret):
-        self.access_token_secret = access_token_secret
-        return self.access_token_secret
-
-    def setApi(self):
-        self.api = tweepy.API(self.auth)
-        return self.api
-
-    def getApi(self):
-        return self.api
+import re
+import webbrowser
+import plotly.graph_objects as go
 
 @app.route('/')
 def home():
@@ -59,6 +24,7 @@ def home():
 @app.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
+
     if request.method == "POST":
         A1.setConsumer_key(request.form["consumer_key"])
         A1.setConsumer_secret(request.form["consumer_secret"])
@@ -67,38 +33,61 @@ def login():
             auth = A1.getAuth()
             redirect_url = auth.get_authorization_url()
             webbrowser.open_new_tab(redirect_url)
+            A1.error = None
             return redirect(url_for("authorise"))
-        except tweepy.TweepyException:
-             print('Error! Failed to get request token.')
-        return render_template("login.html", form=form, active=True)
-    return render_template("login.html", form=form ,active=True)
+        except tweepy.TweepyException as e:
+            A1.error = e
+            print(e)
+        return redirect(url_for("login"))
+    return render_template("login.html", form=form ,active=True, error = A1.error, loginActive=True)
 
 @app.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
     form = SearchForm()
-    statusses = []
+
     if request.method == "POST":
-        word = f"({request.form['searchField']})"
         list_id = 1463104625704378368
-        members = A1.api.list_timeline(list_id=list_id, include_rts=False)
+        T1.members = A1.api.list_timeline(list_id=list_id, include_rts=False, count=200)
 
-        for member in members:
-            status = A1.api.get_status(member.id, tweet_mode="extended")
-            print(status.full_text)
-            match = re.search(word, status.full_text)
-            if match:
-                statusses.append(status)
-                print("Found")
-            else:
-                pass
+        if request.form["btn"] == "search":
+            word = f"({request.form['searchField']})"
+            for member in T1.members:
+                status = A1.api.get_status(member.id, tweet_mode="extended")
+                match = re.search(word, status.full_text)
+                if match:
+                    T1.statusses.append(status)
+                else:
+                    pass
+        elif request.form["btn"] == "loop":
+            selected = request.form.get("select")
+            list = []
 
-        return render_template("dashboard.html", statusses=statusses, form=form)
+            if selected == "1":
+                list = T1.crypto
+            elif selected == "2":
+                list = T1.market
+            elif selected == "3":
+                list = T1.myStocks
 
-    return render_template("dashboard.html", statusses = statusses, form=form)
+            for member in T1.members:
+                appended = False
+                status = A1.api.get_status(member.id, tweet_mode="extended")
+                for word in list:
+                    match = re.search(word, status.full_text)
+                    if match and not appended:
+                        T1.statusses.append(status)
+                        T1.set_Sentiment(status.full_text)
+                        appended = True
+                    else:
+                        pass
+        return redirect(url_for("dashboard"))
+
+    return render_template("dashboard.html", statusses = T1.statusses, form=form, dashboardActive=True ,sentimentActive= False)
 
 @app.route("/authorise", methods=["GET", "POST"])
 def authorise():
     form = AuthoriseForm()
+
     if request.method == "POST":
         token = request.form["autorisation_key"]
         try:
@@ -106,15 +95,36 @@ def authorise():
             access = auth.get_access_token(token)
             A1.setAccess_token(access[0])
             A1.setaccess_token_secret(access[1])
-            api = A1.setApi()
+            A1.setApi()
+            A1.error = None
             return redirect(url_for("dashboard"))
-        except:
-            print('Error! Failed to get request authorisation.')
-    return render_template("authorise.html", form=form)
+        except tweepy.TweepyException as e:
+            A1.error = e
+            print(e)
+        return redirect(url_for("authorise"))
+    return render_template("authorise.html", form=form, error = A1.error)
 
 @app.route("/logout")
 def logout():
     A1.api = None
     return redirect(url_for("home"))
 
-A1 = Auth()
+@app.route("/sentiment")
+def sentiment():
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=T1.get_total_sentiment(),
+        domain={'x': [0, 1], 'y': [0, 1]},
+        title={'text': "Sentiment"},
+        gauge = {'axis': {'range': [-1, 1]},
+                 'bar': {'color': "grey"},
+             'steps': [
+                 {'range': [-1, -0.5], 'color': "red"},
+                 {'range': [-0.5, 0.5], 'color': "white"},
+                 {'range': [0.5, 1], 'color': "green"}]}))
+
+    fig.write_image("twitterApp/static/src/fig.png")
+
+    return render_template("sentiment.html", fig = fig, dashboardActive=False ,sentimentActive= True)
+
+

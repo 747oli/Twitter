@@ -13,24 +13,39 @@
         <div class="mb-3 item input">
             {{ form.searchField(class="form-control") }}
         </div>
-        <div>
-            <div class="mb-3 item">
-                {{ form.search(class="btn btn-primary") }}
-            </div>
+        <div class="mb-3 item2">
+                <button type="submit" class="btn btn-primary" name= "btn" value="search">Search</button>
+                <select class="form-select" aria-label="select" name="select">
+                    <option value="1">Crypto</option>
+                    <option value="2">Market</option>
+                    <option value="3">My Stocks</option>
+                </select>
+                <button type="submit" class="btn btn-primary btnX" name="btn" value="loop">Loop</button>
         </div>
+
     </div>
 </form>
 
-
-
 <div class="container2">
-                {% for status in statusses %}
-                    <div class="item2">
-                        <div>{{ status.user.name }}</div>
-                        <div><img src="{{ status.user.profile_image_url}}"></div>
-                        <div>{{ status.full_text }}</div>
-                    </div>
-                {% endfor %}
+    {% for status in statusses %}
+    <div class="card" style="width: 18rem;">
+      <img class="card-img-top" src="{{ status.user.profile_image_url.replace('_normal.', '.') }}" alt="Card image cap">
+      <div class="card-body">
+        <h5 class="card-title">{{ status.user.name }}</h5>
+        <p class="card-text">{{ status.full_text }}</p>
+      </div>
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><span>Created:</span> {{ status.created_at }}</li>
+        <li class="list-group-item"><span>Location:</span> {{ status.user.location }}</li>
+      </ul>
+      <div class="card-body">
+        <a href="https://twitter.com/{{status.user.screen_name}}/status/{{ status.id }}" class="card-link">To Twitter Post</a>
+        {% if status.entities.urls != [] %}
+        <a href="{{ status.entities.urls[0].url }}" class="card-link">To Article</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
 </div>
 
 {% endblock %}
