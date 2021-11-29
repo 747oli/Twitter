@@ -4,9 +4,9 @@ class Tweets():
     def __init__(self):
         self.members = []
         self.statusses = []
-        self.crypto = ["(BTC)", "(ETH)", "(Doge)", "(bitcoin)", "(Bitcoin)", "(Etherium)"]
-        self.market = ["(market)", "(stock)", "(NYSE)", "(NASDAQ)", "(points)", "(ticker)"]
-        self.myStocks = ["(Visa)", "V", "(MCDO)", "(Mc)", "(PEPSI)", "(MSFT)", "(Microsoft)"]
+        self.crypto = ["BTC", "Cardano", "Tether" ,"Doge", "bitcoin", "Etherium", "Altcoin", "Blockchain", "Coin", "Cryptocurrency", "Token", "Crypto", "Binance"]
+        self.market = ["market", "stock", "NYSE", "NASDAQ", "points", "ticker", "NSDQ", "Dow Jones", "index", "futures"]
+        self.myStocks = ["Visa", "V", "MCDO", "McDonalds", "PEPSI", "MSFT", "Microsoft"]
         self.analyzer = SentimentIntensityAnalyzer()
         self.sentimentList = []
 
@@ -24,10 +24,14 @@ class Tweets():
         totaalSentiment = 0
         aantal = 0
         for sentiment in self.sentimentList:
-            totaalSentiment += sentiment
+            totaalSentiment += (sentiment * 100)
             aantal +=1
         gemiddeldSentiment = totaalSentiment/aantal
         return gemiddeldSentiment
+
+    def resetLists(self):
+        self.sentimentList = []
+        self.statusses = []
 
 
 T1 = Tweets()

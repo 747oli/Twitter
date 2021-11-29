@@ -50,16 +50,23 @@ def dashboard():
         T1.members = A1.api.list_timeline(list_id=list_id, include_rts=False, count=200)
 
         if request.form["btn"] == "search":
+            T1.statusses = []
+            T1.sentimentList = []
+
             word = f"({request.form['searchField']})"
             for member in T1.members:
                 status = A1.api.get_status(member.id, tweet_mode="extended")
-                match = re.search(word, status.full_text)
+                match = re.search(word, status.full_text, flags=re.IGNORECASE)
                 if match:
                     T1.statusses.append(status)
+                    T1.set_Sentiment(status.full_text)
                 else:
                     pass
         elif request.form["btn"] == "loop":
             selected = request.form.get("select")
+
+            T1.statusses = []
+            T1.sentimentList = []
             list = []
 
             if selected == "1":
@@ -73,7 +80,7 @@ def dashboard():
                 appended = False
                 status = A1.api.get_status(member.id, tweet_mode="extended")
                 for word in list:
-                    match = re.search(word, status.full_text)
+                    match = re.search(word, status.full_text, re.IGNORECASE)
                     if match and not appended:
                         T1.statusses.append(status)
                         T1.set_Sentiment(status.full_text)
@@ -100,7 +107,6 @@ def authorise():
             return redirect(url_for("dashboard"))
         except tweepy.TweepyException as e:
             A1.error = e
-            print(e)
         return redirect(url_for("authorise"))
     return render_template("authorise.html", form=form, error = A1.error)
 
@@ -116,12 +122,12 @@ def sentiment():
         value=T1.get_total_sentiment(),
         domain={'x': [0, 1], 'y': [0, 1]},
         title={'text': "Sentiment"},
-        gauge = {'axis': {'range': [-1, 1]},
+        gauge = {'axis': {'range': [-100, 100]},
                  'bar': {'color': "grey"},
              'steps': [
-                 {'range': [-1, -0.5], 'color': "red"},
-                 {'range': [-0.5, 0.5], 'color': "white"},
-                 {'range': [0.5, 1], 'color': "green"}]}))
+                 {'range': [-100, -50], 'color': "red"},
+                 {'range': [-50, 50], 'color': "white"},
+                 {'range': [50, 100], 'color': "green"}]}))
 
     fig.write_image("twitterApp/static/src/fig.png")
 
